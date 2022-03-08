@@ -16,12 +16,11 @@
   </body>
 
 <!-- Import TensorFlow.js library -->
-<!-- <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js" type="text/javascript">
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js" type="text/javascript">
 </script> -->
 
 <script type="module">
-  import * as tf from 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js';
-  
+    
   // Screen variables
   const canvas = document.querySelector('.myCanvas');
   const width = canvas.width = 600;
@@ -29,7 +28,8 @@
   const ctx = canvas.getContext('2d');
   
   (async () => {
-    const model = await tf.loadLayersModel('https://www.dropbox.com/s/r002kg3g3n37ps8/model.json?dl=1');
+    const model = await tf.loadLayersModel('localstorage://model');
+    console.log(model);
     })();
 
   ctx.fillStyle = 'black';
