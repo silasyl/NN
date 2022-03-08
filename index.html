@@ -28,7 +28,7 @@
   const ctx = canvas.getContext('2d');
   
   (async () => {
-    const model = await tf.loadLayersModel('localstorage://model');
+    const model = await tf.loadLayersModel('file://model.json');
     console.log(model);
     })();
 
