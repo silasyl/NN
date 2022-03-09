@@ -39,24 +39,6 @@
       let db;
 
 
-      function init() {
-        // Use transaction oncomplete to make sure the objectStore creation is finished before adding data into it.
-        // Open transaction, get object store, and get() each video by name
-        let objectStore = db.transaction('model_os').objectStore('model_os');
-
-        /*
-        let objectStore = db.transaction('model_os').objectStore('model_os');
-        let request = objectStore.get('model');
-        request.onsucess = function() {
-          // If the model does not exists in the database, fetch it
-          if (!request.result) {
-            console.log('getting Model');
-            fetchModelFromNetwork();
-          }
-        };*/
-      }
-
-
       // Define the fetchModelFromNetwork() function
       function fetchModelFromNetwork() {
         console.log('fetching model from network');
@@ -72,27 +54,27 @@
       }
 
 
-      // Define the storeVideo() function
-      function storeVideo(mp4Blob, webmBlob, name) {
-/*        // Open transaction, get object store; make it a readwrite so we can write to the IDB
-        let objectStore = db.transaction(['videos_os'], 'readwrite').objectStore('videos_os');
-        // Create a record to add to the IDB
-        let record = {
-          mp4 : mp4Blob,
-          webm : webmBlob,
-          name : name
+      // Define the storeModel() function
+      function storeModel(modelBlob, binBlob) {
+        // Open transaction, get object store; make it a readwrite so we can write to the IDB
+        let objectStore = db.transaction('model_os').objectStore('model_os');
+        // Create a structure to add to the IDB
+        let structure = {
+          model : modelBlob,
+          weights : binBlob,
+          name : "cnn"
         }
 
-        // Add the record to the IDB using add()
-        let request = objectStore.add(record);
+        // Add the structure to the IDB using add()
+        let request = objectStore.add(structure);
 
         request.onsuccess = function() {
-          console.log('Record addition attempt finished');
+          console.log('Structure addition finished');
         }
 
         request.onerror = function() {
           console.log(request.error);
-        }*/
+        }
       }
 
 
@@ -176,102 +158,7 @@
 
 
 
-
-
-
-
-
-  window.onchange = function() {
-    // Create constants
-    const videos = [
-      { 'name' : 'crystal' }
-    ];
-    // Create an instance of a db object for us to store our database in
-    let db;
-
-    function init() {
-      // Open transaction, get object store, and get() each video by name
-      let objectStore = db.transaction('videos_os').objectStore('videos_os');
-      let request = objectStore.get(videos[i].name);
-      request.onsuccess = function() {
-        // If the result exists in the database (is not undefined)
-        if(request.result) {
-          // Grab the videos from IDB and display them using displayVideo()
-          console.log('taking videos from IDB');
-          displayVideo(request.result.mp4, request.result.webm, request.result.name);
-        } else {
-          // Fetch the videos from the network
-          fetchVideoFromNetwork(videos[i]);
-        }
-      };
-    }
-
-    // Define the fetchVideoFromNetwork() function
-    function fetchVideoFromNetwork(video) {
-      console.log('fetching videos from network');
-      // Fetch the MP4 and WebM versions of the video using the fetch() function,
-      // then expose their response bodies as blobs
-      let mp4Blob = fetch('https://github.com/mdn/learning-area/raw/main/javascript/apis/client-side-storage/indexeddb/video-store/videos/' + video.name + '.mp4?raw=true').then(response =>
-        response.blob()
-      );
-      let webmBlob = fetch('https://github.com/mdn/learning-area/raw/main/javascript/apis/client-side-storage/indexeddb/video-store/videos/' + video.name + '.webm?raw=true').then(response =>
-        response.blob()
-      );
-
-      // Only run the next code when both promises have fulfilled
-      Promise.all([mp4Blob, webmBlob]).then(function(values) {
-        // display the video fetched from the network with displayVideo()
-        displayVideo(values[0], values[1], video.name);
-        // store it in the IDB using storeVideo()
-        storeVideo(values[0], values[1], video.name);
-      });
-    }
-
-    // Define the storeVideo() function
-    function storeVideo(mp4Blob, webmBlob, name) {
-      // Open transaction, get object store; make it a readwrite so we can write to the IDB
-      let objectStore = db.transaction(['videos_os'], 'readwrite').objectStore('videos_os');
-      // Create a record to add to the IDB
-      let record = {
-        mp4 : mp4Blob,
-        webm : webmBlob,
-        name : name
-      }
-
-      // Add the record to the IDB using add()
-      let request = objectStore.add(record);
-
-      request.onsuccess = function() {
-        console.log('Record addition attempt finished');
-      }
-
-      request.onerror = function() {
-        console.log(request.error);
-      }
-    };
-
-    
-    // Setup the database tables if this has not already been done
-    request.onupgradeneeded = function(e) {
-
-      // Grab a reference to the opened database
-      let db = e.target.result;
-
-      // Create an objectStore to store our videos in (basically like a single table)
-      // including a auto-incrementing key
-      let objectStore = db.createObjectStore('videos_os', { keyPath: 'name' });
-
-      // Define what data items the objectStore will contain
-      objectStore.createIndex('mp4', 'mp4', { unique: false });
-      objectStore.createIndex('webm', 'webm', { unique: false });
-
-      console.log('Database setup complete');
-    };
-  };
-
-
-
-
+  
   
 /*  (async () => {
     const model = await tf.loadGraphModel('model/model.json');
