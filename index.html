@@ -16,140 +16,22 @@
   </body>
 
 <!-- Import TensorFlow.js library -->
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js" type="text/javascript">
-</script> -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js">
+</script>
 
 <script type="module">
-    
+
   // Screen variables
   const canvas = document.querySelector('.myCanvas');
   const width = canvas.width = 600;
   const height = canvas.height = 400;
   const ctx = canvas.getContext('2d');
+  let model;
 
 
-  window.onload = function(){
-
-    // IndexedDB
-    if (!window.indexedDB){
-      console.log("Your browser doesn't support a stable version of IndexedDB. Such and such feature will not be available");
-    } else {
-
-      // Create an instance of a db object for us to store our database in
-      let db;
-
-
-      // Define the fetchModelFromNetwork() function
-      function fetchModelFromNetwork() {
-        console.log('fetching model from network');
-        // Fetch the model using the fetch() function, then expose their response bodies as blobs
-        let modelBlob = fetch('/NN/model/model.json').then(response => response.blob());
-        let binBlob = fetch('/NN/model/group1-shard1of1.bin').then(response => response.blob());
-
-        // Only run the next code when both promises have fulfilled
-        Promise.all([modelBlob, binBlob]).then(function(values) {
-          // store it in the IDB using storeModel()
-          storeModel(values[0], values[1]);
-        });
-      }
-
-
-      // Define the storeModel() function
-      function storeModel(modelBlob, binBlob) {
-        // Open transaction, get object store; make it a readwrite so we can write to the IDB
-        let objectStore = db.transaction(['model_os'], "readwrite").objectStore('model_os');
-        // Create a structure to add to the IDB
-        let structure = {
-          model : modelBlob,
-          bin : binBlob,
-          name : "model"
-        }
-
-        // Add the structure to the IDB using add()
-        let request = objectStore.add(structure);
-
-        request.onsuccess = function() {
-          console.log('Structure addition finished');
-        }
-
-        request.onerror = function() {
-          console.log(request.error);
-        }
-      }
-
-
-      /* Opening a database */
-      // Open our database; it is created if it doesn't already exist
-      // (see onupgradeneeded below)
-      /*let req = indexedDB.deleteDatabase('model_db');
-      req.onsuccess = function () {
-          console.log("Deleted database successfully");
-      };
-      req.onerror = function () {
-          console.log("Couldn't delete database");
-      };
-      req.onblocked = function () {
-          console.log("Couldn't delete database due to the operation being blocked");
-      };*/
-
-      let request = window.indexedDB.open('model_db', 1);
-
-
-      /* Generating handlers */
-      // onerror handler signifies that the database didn't open successfully
-      request.onerror = function() {
-        console.log('Database failed to open');
-      };
-
-      // onsuccess handler signifies that the database opened successfully
-      request.onsuccess = function(e) {
-        console.log('Database opened succesfully');
-
-        // Store the opened database object in the db variable. This is used a lot later
-        db = e.target.result;
-      };
-
-
-      /* Creating or updating the version of the database */
-      // Setup the database tables if this has not already been done
-      request.onupgradeneeded = function(e) {
-        
-        // Save the IDBDatabase interface
-        let db = e.target.result;
-
-        // Create an objectStore for this database
-        let objectStore = db.createObjectStore("model_os", { keyPath: 'name' });
-
-        //// Define what data items the objectStore will contain
-        //objectStore.createIndex('mp4', 'mp4', { unique: false });
-        //objectStore.createIndex('webm', 'webm', { unique: false });
-
-        // Use transaction oncomplete to make sure the objectStore creation is finished before adding data into it.
-        // Open transaction, get object store, and get() the model
-        objectStore.transaction.oncomplete = function(e) {
-          // Store values in the newly created objectStore
-          let customerObjectStore = db.transaction('model_os').objectStore('model_os');
-          if (!customerObjectStore.result) {
-            console.log('getting Model');
-            fetchModelFromNetwork();
-          }
-        };
-
-
-        console.log('Database setup complete');
-      };
-  }}
-
-
-  async function load_model() {
-    const model = await tf.loadLayersModel('indexeddb://model');
-    return model;
-  }
-
-
-  async function loadModel() {
-    const model = await tf.loadGraphModel("https://raw.githubusercontent.com/silasyl/NN/main/model/model.json");
-    console.log("Model loaded:" + model);
+  window.onload = async function(){
+    model = await tf.loadLayersModel("https://raw.githubusercontent.com/silasyl/NN/main/model/model.json");
+    console.log("Model loaded");
   }
 
 
@@ -217,9 +99,7 @@
     }
     else if (mousexy.x >= 160 && mousexy.x <= 260 && mousexy.y >= OFFSET+ROWS*CELL_SIZE+30 && mousexy.y <= OFFSET+ROWS*CELL_SIZE+60) {
       // Generate classification
-      //model = load_model();
-      model = loadModel();
-      console.log(model);
+      classify();
     }
   }
 
@@ -270,12 +150,17 @@
     requestAnimationFrame(draw);
   }
 
+
+  function classify(){
+    const x_predict = tf.tensor(handwritting).reshape([1, 28, 28, 1]);
+    const y_predict = model.predict(x_predict).dataSync();
+    const output = y_predict.indexOf(Math.max.apply(null, y_predict));
+    
+    console.log(output);
+  }
+
+
   draw();
-
-
-
-
-
 
 
   </script>
