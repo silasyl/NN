@@ -142,7 +142,7 @@
 
 
   async function load_model() {
-    const model = await tf.loadLayersModel('model_db://model');
+    const model = await tf.loadLayersModel('indexeddb://model');
     return model;
   }
 
