@@ -141,6 +141,12 @@
   }}
 
 
+  async function load_model() {
+    const model = await tf.loadLayersModel('model_db://model');
+    return model;
+  }
+
+
   ctx.fillStyle = 'black';
   ctx.fillRect(0, 0, width, height);
 
@@ -205,7 +211,7 @@
     }
     else if (mousexy.x >= 160 && mousexy.x <= 260 && mousexy.y >= OFFSET+ROWS*CELL_SIZE+30 && mousexy.y <= OFFSET+ROWS*CELL_SIZE+60) {
       // Generate classification
-      const model = await tf.loadLayersModel('model_db://model');
+      model = load_model();
       console.log(model);
     }
   }
