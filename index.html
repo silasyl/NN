@@ -61,8 +61,8 @@
       function fetchModelFromNetwork() {
         console.log('fetching model from network');
         // Fetch the model using the fetch() function, then expose their response bodies as blobs
-        let modelBlob = fetch('/model/model.json').then(response => response.blob());
-        let binBlob = fetch('/model/group1-shard1of1.bin').then(response => response.blob());
+        let modelBlob = fetch('/NN/model/model.json').then(response => response.blob());
+        let binBlob = fetch('/NN/model/group1-shard1of1.bin').then(response => response.blob());
 
         // Only run the next code when both promises have fulfilled
         Promise.all([modelBlob, binBlob]).then(function(values) {
