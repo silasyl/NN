@@ -57,12 +57,12 @@
       // Define the storeModel() function
       function storeModel(modelBlob, binBlob) {
         // Open transaction, get object store; make it a readwrite so we can write to the IDB
-        let objectStore = db.transaction('model_os', "readwrite").objectStore('model_os');
+        let objectStore = db.transaction(['model_os'], "readwrite").objectStore('model_os');
         // Create a structure to add to the IDB
         let structure = {
           model : modelBlob,
-          weights : binBlob,
-          name : "cnn"
+          bin : binBlob,
+          name : "model"
         }
 
         // Add the structure to the IDB using add()
@@ -78,11 +78,10 @@
       }
 
 
-
       /* Opening a database */
       // Open our database; it is created if it doesn't already exist
       // (see onupgradeneeded below)
-      let req = indexedDB.deleteDatabase('model_db');
+      /*let req = indexedDB.deleteDatabase('model_db');
       req.onsuccess = function () {
           console.log("Deleted database successfully");
       };
@@ -91,7 +90,7 @@
       };
       req.onblocked = function () {
           console.log("Couldn't delete database due to the operation being blocked");
-      };
+      };*/
 
       let request = window.indexedDB.open('model_db', 1);
 
@@ -139,31 +138,8 @@
 
         console.log('Database setup complete');
       };
-
-
-      
-
-
-
-    
-
   }}
 
-
-  
-
-
-
-
-
-
-
-  
-  
-/*  (async () => {
-    const model = await tf.loadGraphModel('model/model.json');
-    console.log(model);
-    })();*/
 
   ctx.fillStyle = 'black';
   ctx.fillRect(0, 0, width, height);
@@ -229,7 +205,8 @@
     }
     else if (mousexy.x >= 160 && mousexy.x <= 260 && mousexy.y >= OFFSET+ROWS*CELL_SIZE+30 && mousexy.y <= OFFSET+ROWS*CELL_SIZE+60) {
       // Generate classification
-      console.log(typeof handwritting);
+      const model = await tf.loadLayersModel('model_db://model');
+      console.log(model);
     }
   }
 
