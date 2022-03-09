@@ -57,7 +57,7 @@
       // Define the storeModel() function
       function storeModel(modelBlob, binBlob) {
         // Open transaction, get object store; make it a readwrite so we can write to the IDB
-        let objectStore = db.transaction('model_os').objectStore('model_os');
+        let objectStore = db.transaction('model_os', "readwrite").objectStore('model_os');
         // Create a structure to add to the IDB
         let structure = {
           model : modelBlob,
