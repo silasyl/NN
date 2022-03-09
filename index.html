@@ -26,11 +26,257 @@
   const width = canvas.width = 600;
   const height = canvas.height = 400;
   const ctx = canvas.getContext('2d');
+
+
+  window.onload = function(){
+
+    // IndexedDB
+    if (!window.indexedDB){
+      console.log("Your browser doesn't support a stable version of IndexedDB. Such and such feature will not be available");
+    } else {
+
+      // Create an instance of a db object for us to store our database in
+      let db;
+
+
+      function init() {
+        // Use transaction oncomplete to make sure the objectStore creation is finished before adding data into it.
+        // Open transaction, get object store, and get() each video by name
+        let objectStore = db.transaction('model_os').objectStore('model_os');
+
+        /*
+        let objectStore = db.transaction('model_os').objectStore('model_os');
+        let request = objectStore.get('model');
+        request.onsucess = function() {
+          // If the model does not exists in the database, fetch it
+          if (!request.result) {
+            console.log('getting Model');
+            fetchModelFromNetwork();
+          }
+        };*/
+      }
+
+
+      // Define the fetchModelFromNetwork() function
+      function fetchModelFromNetwork() {
+        console.log('fetching model from network');
+        // Fetch the model using the fetch() function, then expose their response bodies as blobs
+        let modelBlob = fetch('model/model.json').then(response => response.blob());
+        let binBlob = fetch('model/group1-shard1of1.bin').then(response => response.blob());
+
+        // Only run the next code when both promises have fulfilled
+        Promise.all([modelBlob, binBlob]).then(function(values) {
+          // store it in the IDB using storeModel()
+          storeModel(values[0], values[1]);
+        });
+      }
+
+
+      // Define the storeVideo() function
+      function storeVideo(mp4Blob, webmBlob, name) {
+/*        // Open transaction, get object store; make it a readwrite so we can write to the IDB
+        let objectStore = db.transaction(['videos_os'], 'readwrite').objectStore('videos_os');
+        // Create a record to add to the IDB
+        let record = {
+          mp4 : mp4Blob,
+          webm : webmBlob,
+          name : name
+        }
+
+        // Add the record to the IDB using add()
+        let request = objectStore.add(record);
+
+        request.onsuccess = function() {
+          console.log('Record addition attempt finished');
+        }
+
+        request.onerror = function() {
+          console.log(request.error);
+        }*/
+      }
+
+
+
+      /* Opening a database */
+      // Open our database; it is created if it doesn't already exist
+      // (see onupgradeneeded below)
+      let req = indexedDB.deleteDatabase('model_db');
+      req.onsuccess = function () {
+          console.log("Deleted database successfully");
+      };
+      req.onerror = function () {
+          console.log("Couldn't delete database");
+      };
+      req.onblocked = function () {
+          console.log("Couldn't delete database due to the operation being blocked");
+      };
+
+      let request = window.indexedDB.open('model_db', 1);
+
+
+      /* Generating handlers */
+      // onerror handler signifies that the database didn't open successfully
+      request.onerror = function() {
+        console.log('Database failed to open');
+      };
+
+      // onsuccess handler signifies that the database opened successfully
+      request.onsuccess = function(e) {
+        console.log('Database opened succesfully');
+
+        // Store the opened database object in the db variable. This is used a lot later
+        db = e.target.result;
+      };
+
+
+      /* Creating or updating the version of the database */
+      // Setup the database tables if this has not already been done
+      request.onupgradeneeded = function(e) {
+        
+        // Save the IDBDatabase interface
+        let db = e.target.result;
+
+        // Create an objectStore for this database
+        let objectStore = db.createObjectStore("model_os", { keyPath: 'name' });
+
+        //// Define what data items the objectStore will contain
+        //objectStore.createIndex('mp4', 'mp4', { unique: false });
+        //objectStore.createIndex('webm', 'webm', { unique: false });
+
+        // Use transaction oncomplete to make sure the objectStore creation is finished before adding data into it.
+        // Open transaction, get object store, and get() the model
+        objectStore.transaction.oncomplete = function(e) {
+          // Store values in the newly created objectStore
+          let customerObjectStore = db.transaction('model_os').objectStore('model_os');
+          if (!customerObjectStore.result) {
+            console.log('getting Model');
+            fetchModelFromNetwork();
+          }
+        };
+
+
+        console.log('Database setup complete');
+      };
+
+
+      
+
+
+
+    
+
+  }}
+
+
   
-  (async () => {
+
+
+
+
+
+
+
+
+
+
+
+
+  window.onchange = function() {
+    // Create constants
+    const videos = [
+      { 'name' : 'crystal' }
+    ];
+    // Create an instance of a db object for us to store our database in
+    let db;
+
+    function init() {
+      // Open transaction, get object store, and get() each video by name
+      let objectStore = db.transaction('videos_os').objectStore('videos_os');
+      let request = objectStore.get(videos[i].name);
+      request.onsuccess = function() {
+        // If the result exists in the database (is not undefined)
+        if(request.result) {
+          // Grab the videos from IDB and display them using displayVideo()
+          console.log('taking videos from IDB');
+          displayVideo(request.result.mp4, request.result.webm, request.result.name);
+        } else {
+          // Fetch the videos from the network
+          fetchVideoFromNetwork(videos[i]);
+        }
+      };
+    }
+
+    // Define the fetchVideoFromNetwork() function
+    function fetchVideoFromNetwork(video) {
+      console.log('fetching videos from network');
+      // Fetch the MP4 and WebM versions of the video using the fetch() function,
+      // then expose their response bodies as blobs
+      let mp4Blob = fetch('https://github.com/mdn/learning-area/raw/main/javascript/apis/client-side-storage/indexeddb/video-store/videos/' + video.name + '.mp4?raw=true').then(response =>
+        response.blob()
+      );
+      let webmBlob = fetch('https://github.com/mdn/learning-area/raw/main/javascript/apis/client-side-storage/indexeddb/video-store/videos/' + video.name + '.webm?raw=true').then(response =>
+        response.blob()
+      );
+
+      // Only run the next code when both promises have fulfilled
+      Promise.all([mp4Blob, webmBlob]).then(function(values) {
+        // display the video fetched from the network with displayVideo()
+        displayVideo(values[0], values[1], video.name);
+        // store it in the IDB using storeVideo()
+        storeVideo(values[0], values[1], video.name);
+      });
+    }
+
+    // Define the storeVideo() function
+    function storeVideo(mp4Blob, webmBlob, name) {
+      // Open transaction, get object store; make it a readwrite so we can write to the IDB
+      let objectStore = db.transaction(['videos_os'], 'readwrite').objectStore('videos_os');
+      // Create a record to add to the IDB
+      let record = {
+        mp4 : mp4Blob,
+        webm : webmBlob,
+        name : name
+      }
+
+      // Add the record to the IDB using add()
+      let request = objectStore.add(record);
+
+      request.onsuccess = function() {
+        console.log('Record addition attempt finished');
+      }
+
+      request.onerror = function() {
+        console.log(request.error);
+      }
+    };
+
+    
+    // Setup the database tables if this has not already been done
+    request.onupgradeneeded = function(e) {
+
+      // Grab a reference to the opened database
+      let db = e.target.result;
+
+      // Create an objectStore to store our videos in (basically like a single table)
+      // including a auto-incrementing key
+      let objectStore = db.createObjectStore('videos_os', { keyPath: 'name' });
+
+      // Define what data items the objectStore will contain
+      objectStore.createIndex('mp4', 'mp4', { unique: false });
+      objectStore.createIndex('webm', 'webm', { unique: false });
+
+      console.log('Database setup complete');
+    };
+  };
+
+
+
+
+  
+/*  (async () => {
     const model = await tf.loadGraphModel('model/model.json');
     console.log(model);
-    })();
+    })();*/
 
   ctx.fillStyle = 'black';
   ctx.fillRect(0, 0, width, height);
