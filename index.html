@@ -147,6 +147,15 @@
   }
 
 
+  const tf = require('@tensorflow/tfjs');
+  const tfnode = require('@tensorflow/tfjs-node');
+
+  async function loadModel() {
+    const model = await tf.loadGraphModel("https://raw.githubusercontent.com/silasyl/NN/main/model/model.json");
+    console.log("Model loaded:" + model);
+  }
+
+
   ctx.fillStyle = 'black';
   ctx.fillRect(0, 0, width, height);
 
@@ -211,7 +220,8 @@
     }
     else if (mousexy.x >= 160 && mousexy.x <= 260 && mousexy.y >= OFFSET+ROWS*CELL_SIZE+30 && mousexy.y <= OFFSET+ROWS*CELL_SIZE+60) {
       // Generate classification
-      model = load_model();
+      //model = load_model();
+      model = loadModel();
       console.log(model);
     }
   }
