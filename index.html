@@ -147,9 +147,6 @@
   }
 
 
-  const tf = require('@tensorflow/tfjs');
-  const tfnode = require('@tensorflow/tfjs-node');
-
   async function loadModel() {
     const model = await tf.loadGraphModel("https://raw.githubusercontent.com/silasyl/NN/main/model/model.json");
     console.log("Model loaded:" + model);
